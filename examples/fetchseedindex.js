@@ -6,7 +6,7 @@
 
 
 
-const Mam = require('/home/karthik/eyantra/mam/scripts/mam.node.js');
+const Mam = require('/home/karthik/gitpush/mam/scripts/mam.node.js');
 const IOTA = require('iota.lib.js');
 const iota = new IOTA({ provider: 'https://nodes.devnet.iota.org:443' });
 const MODE = 'public';

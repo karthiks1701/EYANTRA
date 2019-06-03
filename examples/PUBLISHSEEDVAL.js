@@ -6,7 +6,7 @@
 
 
 
-const Mam = require('/home/karthik/eyantra/mam/scripts/mam.node.js');
+const Mam = require('/home/karthik/gitpush/mam/scripts/mam.node.js');
 const IOTA = require('iota.lib.js');
 const iota = new IOTA({ provider: 'https://nodes.devnet.iota.org:443' });
 const MODE = 'public';
@@ -15,7 +15,7 @@ const SECURITYLEVEL = 1;
 const TIMEINTERVAL  = 30; 
 let seed = '';
 let json1;
-
+let readyMam=0;
 let key;
 let resp; 
 let json;
@@ -45,6 +45,7 @@ async function fetchStartCount()
     
     let trytes = iota.utils.toTrytes(JSON.stringify(json1));
     message1 = Mam.create(mamState, trytes);
+    console.log();
     console.log('The first root:');
     console.log(message1.root);
     console.log('messages in stream');
@@ -54,44 +55,15 @@ async function fetchStartCount()
  }
 
 
-if (MODE == 'restricted') 
- {
-    
-    key = iota.utils.toTrytes(SIDEKEY);
-    mamState = Mam.changeMode(mamState, MODE, key);
- 
- } 
-else 
- {
-    
-    mamState = Mam.changeMode(mamState, MODE);
- 
- }
-
-
-
- 
-
-
-const generateJSON = function() 
- {
- 
-    
-    const data = Math.floor((Math.random()*89)+10);
-    const json = data;
-    console.log("attaching");
-    console.log(json);
-    return json;
- 
- }
-
 const publish = async function(packet) 
  {
-    console.log("a");
+   
     const trytes = iota.utils.toTrytes(JSON.stringify(packet));
     const message = Mam.create(mamState, trytes); 
     await Mam.attach(message.payload, message.address);
     mamState=message.state;
+    readyMam=1;
+    console.log();
     console.log("attached");
     
     
@@ -104,12 +76,6 @@ const executeDataPublishing = async function()
     console.log(json1);
  }
 
-
-
-const foor = function()
- {
-    return "a";
- }
 
  
 
@@ -124,6 +90,7 @@ const execute = async (root) =>
      let json=JSON.parse(iota.utils.fromTrytes(resp.payload));
      x=x+1;
      console.log(json);
+     execute(resp.nextRoot);
     }
    if (!resp)
      {   
@@ -131,8 +98,11 @@ const execute = async (root) =>
          {
          await Mam.attach(message1.payload, message1.address);
          mamState=message1.state;
-         console.log("attached"); 
-         setInterval(foor(),30000);
+         console.log("attached");
+         if(readyMam==1)
+         {
+          process.exit(1);
+         }         
          process.exit(1);          
          }
          if (x==1)
@@ -150,11 +120,13 @@ const execute = async (root) =>
                  }
 
          executeDataPublishing();
-         setInterval(foor(),30000);
-         process.exit(1);
+         if(readyMam==1)
+         {
+          process.exit(1);
+         }
      }
- 
-     execute(resp.nextRoot);
+    
+     
   
    
  }
